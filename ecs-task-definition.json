@@ -1,0 +1,22 @@
+{
+  "family": "fashion",
+  "executionRoleArn": "arn:aws:iam::aws:policy/service-role/AmazonECSTaskExecutionRolePolicy",
+  "networkMode": "awsvpc",
+  "containerDefinitions": [
+    {
+      "name": "fashion",
+      "image": "951436373303.dkr.ecr.us-east-1.amazonaws.com/fashion",
+      "portMappings": [
+        {
+          "containerPort": 0,
+          "hostPort": 0,
+          "protocol": "udp"
+        }
+      ],
+      "essential": true
+    }
+  ],
+  "requiresCompatibilities": ["FARGATE"],
+  "cpu": "512",
+  "memory": "1024"
+}

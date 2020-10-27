@@ -1,6 +1,6 @@
 const router = require("express").Router();
 
-router.get("/", (req, res) => {
+router.route("/").get((req, res) => {
   res.json({
     ipaddress: req.ip,
     language: req.headers["accept-language"],

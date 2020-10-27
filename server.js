@@ -9,7 +9,7 @@ const passport = require("passport");
 
 require("dotenv").config();
 
-var app = express();
+const app = express();
 
 // Configures the database and opens a global connection that can be used in any module with `mongoose.connection`
 require("./config/database");
@@ -42,5 +42,5 @@ app.use(require("./routes"));
  * -------------- SERVER ----------------
  */
 
-// Server listens on http://localhost:3000
-app.listen(8090);
+const { PORT } = process.env || 3000;
+app.listen(PORT);
