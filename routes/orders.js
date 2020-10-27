@@ -13,7 +13,7 @@ router
   .get((req, res) => {
     Order.find().exec(callback(res));
   })
-  .post("/", (req, res) => {
+  .post((req, res) => {
     console.log("HELLO!");
     Order.create({ ...req.body, deleted: false }, callback(res));
   });
@@ -23,10 +23,10 @@ router
   .get((req, res) => {
     Order.findById(req.params.id).exec(callback(res));
   })
-  .put("/:id", (req, res) => {
+  .put((req, res) => {
     Order.findByIdAndUpdate(req.params.id, req.body).exec(callback(res));
   })
-  .delete("/:id", function (req, res) {
+  .delete((req, res) => {
     Order.findByIdAndDelete(req.params.id).exec(callback(res));
   });
 
