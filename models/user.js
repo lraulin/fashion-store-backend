@@ -1,14 +1,21 @@
-const mongoose = require("mongoose");
+const { Schema, model } = require("mongoose");
 
-mongoose.model(
-  "User",
-  new mongoose.Schema({
-    username: String,
-    hash: String,
-    salt: String,
-    firstName: String,
-    lastName: String,
-    address: String,
-    phone: String,
-  })
-);
+const addressSchema = new Schema({
+  street: String,
+  city: String,
+  state: String,
+  zip: String,
+});
+
+const userSchema = new Schema({
+  username: String,
+  hash: String,
+  salt: String,
+  firstName: String,
+  lastName: String,
+  address: addressSchema,
+  phone: String,
+  isAdmin: Boolean,
+});
+
+model("User", userSchema);

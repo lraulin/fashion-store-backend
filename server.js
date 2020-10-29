@@ -2,11 +2,6 @@ const express = require("express");
 const cors = require("cors");
 const path = require("path");
 const passport = require("passport");
-
-/**
- * -------------- GENERAL SETUP ----------------
- */
-
 require("dotenv").config();
 
 const app = express();
@@ -20,6 +15,9 @@ require("./models");
 // Pass the global passport object into the configuration function
 require("./config/passport")(passport);
 
+// Must be after models are loaded
+const routes = require("./routes");
+
 // This will initialize the passport object on every request
 app.use(passport.initialize());
 
@@ -29,18 +27,9 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cors());
 
-// app.use(express.static(path.join(__dirname, "public")));
-
-/**
- * -------------- ROUTES ----------------
- */
-
 // Imports all of the routes from ./routes/index.js
-app.use(require("./routes"));
+app.use(routes);
 
-/**
- * -------------- SERVER ----------------
- */
-
+// Start server
 const { PORT } = process.env || 3000;
 app.listen(PORT);
