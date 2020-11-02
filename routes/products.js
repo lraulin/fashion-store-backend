@@ -17,7 +17,7 @@ const productTableColumns =
 const handleError = (error, res) => {
   console.log(error);
 
-  if (err.name === "ValidationError") {
+  if (error.name === "ValidationError") {
     return res.status(BAD_REQUEST).json({ error: error.message });
   }
 
@@ -26,7 +26,7 @@ const handleError = (error, res) => {
 
 const insertOne = async (product, res) => {
   try {
-    const inserted = await Product.create(product).exec();
+    const inserted = await Product.create(product);
 
     res.status(OK).send(inserted);
   } catch (error) {
@@ -40,10 +40,10 @@ const insertMany = async (products = [], res) => {
 
   // TODO: validate input
   try {
-    const products = await Product.create(products).exec();
-    res.status(OK).send(products);
+    const createdProducts = await Product.create(products);
+    res.status(OK).send(createdProducts);
   } catch (error) {
-    handleError(error);
+    handleError(error, res);
   }
 };
 
@@ -124,7 +124,9 @@ router
       if (deleted) product.deleted = deleted;
 
       product.save();
-      res.status(OK).send({ success: `Product ${id} successfully updated.` });
+      res
+        .status(OK)
+        .send({ success: `Product ${product._id} successfully updated.` });
     } catch (error) {
       handleError(error);
     }
@@ -136,11 +138,13 @@ router
       if (!product) {
         return res
           .status(NOT_FOUND)
-          .send({ error: `Product with id ${id} not found.` });
+          .send({ error: `Product with id ${product._id} not found.` });
       }
 
       product.delete();
-      res.status(OK).send({ success: `Product ${id} deleted successfully.` });
+      res
+        .status(OK)
+        .send({ success: `Product ${product._id} deleted successfully.` });
     } catch (error) {
       handleError(error);
     }

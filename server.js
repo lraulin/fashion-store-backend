@@ -32,4 +32,4 @@ app.use(routes);
 
 // Start server
 const { PORT } = process.env || 3000;
-app.listen(PORT);
+module.exports = app.listen(PORT);
