@@ -6,6 +6,7 @@ const mongoose = require("mongoose");
 const server = require("../../server");
 const should = chai.should();
 const Product = mongoose.model("Product");
+const mockData = require("./mockData");
 
 chai.use(chaiHttp);
 
@@ -110,7 +111,7 @@ describe("products", function () {
       .post("/products")
       .send(requestBody)
       .end(function (err, res) {
-        res.should.have.status(200);
+        res.should.have.status(201);
         res.body.should.have.property("_id");
         res.body.should.have.property("name", requestBody.name);
         res.body.should.have.property("description", requestBody.description);
