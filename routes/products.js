@@ -2,7 +2,6 @@ const router = require("express").Router();
 const { StatusCodes } = require("http-status-codes");
 const mongoose = require("mongoose");
 const Product = mongoose.model("Product");
-const { check, validationResult } = require("express-validator");
 
 /**
  * HELPER FUNCTIONS
@@ -62,8 +61,6 @@ router
   .get(async (req, res) => {
     // Construct match criteria from query parameters
     const { nameIncludes, category, department, inStock, sort } = req.query;
-    const limit = req.query.limit ? Number.parseInt(req.query.limit) : null;
-    const skip = req.query.skip ? Number.parseInt(req.query.skip) : null;
 
     try {
       const query = Product.find().select(productTableColumns);
@@ -74,26 +71,50 @@ router
       if (department) query.where("department").includes(department);
       if (inStock === "true") query.where("stock").gt(0);
 
-      // optionally paginate results using query parameters
-      if (limit) query.limit(limit);
-      if (skip) query.skip(skip);
-
       // optionally sort results using query parameters
       if (sort) query.sort(sort);
 
+      // optionally paginate results using query parameters
+      const limit = req.query.limit ? Number.parseInt(req.query.limit) : 50;
+      const page = req.query.page ? Number.parseInt(req.query.page) : 1;
+      const pageOptions = {
+        limit,
+        page,
+      };
+      // if (limit) query.limit(limit);
+      // if (skip) query.skip(skip);
+
       query.select(productTableColumns);
-      const products = await query.exec();
-      res.status(StatusCodes.OK).send(products);
+      const {
+        docs,
+        totalDocs,
+        totalPages: lastPage,
+        nextPage,
+      } = await Product.paginate(query, pageOptions);
+
+      const url = "";
+
+      // .set("Link", req.originalUrl + "?page=" + lastPage + "&limit=" + limit)
+      res
+        .status(StatusCodes.OK)
+        .links({
+          next: `${req.originalUrl}?page=${nextPage}&limit=${limit}`,
+          last: `${req.originalUrl}?page=${lastPage}&limit=${limit}`,
+        })
+        .set("FashionStore-Total-Count", totalDocs)
+        .send(docs);
     } catch (error) {
-      handleError(error);
+      handleError(error, res);
     }
   })
 
   .post((req, res) => {
-    if (!Array.isArray(req.body)) {
-      insertOne(req.body, res);
-    } else {
+    if (Array.isArray(req.body)) {
+      // Send 200 response and array of inserted products as body
       insertMany(req.body, res);
+    } else {
+      // Send 201 response with location (/products/:id) of inserted product and item in body
+      insertOne(req.body, res);
     }
   });
 
@@ -104,7 +125,7 @@ router
       const product = await Product.findById(req.params.id).exec();
       res.status(StatusCodes.OK).send(product);
     } catch (error) {
-      handleError(error);
+      handleError(error, res);
     }
   })
 
@@ -149,26 +170,30 @@ router
         .status(StatusCodes.OK)
         .send({ success: `Product ${product._id} successfully updated.` });
     } catch (error) {
-      handleError(error);
+      handleError(error, res);
     }
   })
 
   .delete(async (req, res) => {
+    const { id } = req.params;
     try {
-      const product = await Product.findById(req.params.id).exec();
+      const deletedItem = await Product.findByIdAndDelete(id);
 
-      if (!product) {
+      if (!deletedItem) {
         return res
           .status(StatusCodes.NOT_FOUND)
-          .send({ error: `Product with id ${product._id} not found.` });
+          .send({ error: `Product with id ${id} not found.` });
       }
 
-      product.delete();
       res
         .status(StatusCodes.OK)
-        .send({ success: `Product ${product._id} deleted successfully.` });
+        .send({ success: `Product ${id} deleted successfully.` });
     } catch (error) {
-      handleError(error);
+      if (error.name === "CastError")
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send({ error: `${id} is not a valid ID.` });
+      else handleError(error, res);
     }
   });
 

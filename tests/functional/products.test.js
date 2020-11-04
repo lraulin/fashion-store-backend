@@ -40,7 +40,7 @@ const product2 = {
 
 describe("products", function () {
   beforeEach((done) => {
-    Product.remove({}, (err) => {
+    Product.deleteMany({}, (err) => {
       done();
     });
   });

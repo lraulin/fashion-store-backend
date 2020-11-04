@@ -1,10 +1,7 @@
 const router = require("express").Router();
-const {
-  StatusCodes: { BAD_REQUEST, INTERNAL_SERVER_ERROR, OK },
-} = require("http-status-codes");
+const { StatusCodes } = require("http-status-codes");
 const mongoose = require("mongoose");
 const Order = mongoose.model("Order");
-const { check, validationResult } = require("express-validator");
 
 /**
  * HELPER FUNCTIONS
@@ -14,18 +11,20 @@ const { check, validationResult } = require("express-validator");
 const handleError = (error, res) => {
   console.log(error);
 
-  if (err.name === "ValidationError") {
-    return res.status(BAD_REQUEST).json({ error: error.message });
+  if (error.name === "ValidationError") {
+    return res.status(StatusCodes.BAD_REQUEST).json({ error: error.message });
   }
 
-  res.status(INTERNAL_SERVER_ERROR).send({ error: "Something went wrong..." });
+  res
+    .status(StatusCodes.INTERNAL_SERVER_ERROR)
+    .send({ error: "Something went wrong..." });
 };
 
 const insertOne = async (order, res) => {
   try {
-    const inserted = await Order.create(order).exec();
+    const inserted = await Order.create(order);
 
-    res.status(OK).send(inserted);
+    res.status(StatusCodes.CREATED).send(inserted);
   } catch (error) {
     handleError(error, res);
   }
@@ -33,12 +32,14 @@ const insertOne = async (order, res) => {
 
 const insertMany = async (orders = [], res) => {
   if (orders.length === 0)
-    return res.status(BAD_REQUEST).send({ error: "No orders to add!" });
+    return res
+      .status(StatusCodes.BAD_REQUEST)
+      .send({ error: "No orders to add!" });
 
   // TODO: validate input
   try {
-    const orders = await Order.create(orders).exec();
-    res.status(OK).send(orders);
+    const docs = await Order.create(orders);
+    res.status(StatusCodes.OK).send(docs);
   } catch (error) {
     handleError(error);
   }
@@ -51,24 +52,19 @@ const insertMany = async (orders = [], res) => {
 router
   .route("/")
   .get(async (req, res) => {
-    const { category, department } = req.query;
-
     try {
-      const orders = await Order.find({
-        department: new RegExp(department),
-        category: new RegExp(category),
-        deleted: false,
-      }).exec();
-      res.status(OK).send(orders);
+      const query = Order.find();
+      const orders = await query.exec();
+      res.status(StatusCodes.OK).send(orders);
     } catch (error) {
-      handleError(error);
+      handleError(error, res);
     }
   })
   .post((req, res) => {
     if (Array.isArray(req.body)) {
-      insertOne(req.body, res);
-    } else {
       insertMany(req.body, res);
+    } else {
+      insertOne(req.body, res);
     }
   });
 
@@ -77,19 +73,19 @@ router
   .get(async (req, res) => {
     try {
       const order = await Order.findById(req.params.id).exec();
-      res.status(OK).send(order);
+      res.status(StatusCodes.OK).send(order);
     } catch (error) {
-      handleError(error);
+      handleError(error, res);
     }
   })
   .put(async (req, res) => {
-    const { id } = req.params.id;
+    const { id } = req.params;
     try {
       const order = await Order.findById(req.params.id).exec();
 
       if (!order) {
         return res
-          .status(NOT_FOUND)
+          .status(StatusCodes.NOT_FOUND)
           .send({ error: `Order with id ${id} not found.` });
       }
 
@@ -114,25 +110,31 @@ router
       if (status) order.status = status;
 
       order.save();
-      res.status(OK).send({ success: `Order ${id} successfully updated.` });
+      res
+        .status(StatusCodes.OK)
+        .send({ success: `Order ${id} successfully updated.` });
     } catch (error) {
-      handleError(error);
+      handleError(error, res);
     }
   })
   .delete(async (req, res) => {
+    const { id } = req.params;
     try {
-      const order = await Order.findById(req.params.id).exec();
-
-      if (!order) {
+      const deletedItem = await Order.findByIdAndDelete(req.params.id);
+      if (!deletedItem)
         return res
-          .status(NOT_FOUND)
+          .status(StatusCodes.NOT_FOUND)
           .send({ error: `Order with id ${id} not found.` });
-      }
 
-      order.delete();
-      res.status(OK).send({ success: `Order ${id} deleted successfully.` });
+      res
+        .status(StatusCodes.OK)
+        .send({ success: `Order ${id} deleted successfully.` });
     } catch (error) {
-      handleError(error);
+      if (error.name === "CastError")
+        return res
+          .status(StatusCodes.BAD_REQUEST)
+          .send({ error: `${id} is not a valid ID.` });
+      else handleError(error, res);
     }
   });
 
