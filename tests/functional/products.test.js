@@ -38,18 +38,22 @@ const product2 = {
   deleted: false,
 };
 
-describe("products", function () {
+describe("products", () => {
   beforeEach((done) => {
-    Product.deleteMany({}, (err) => {
-      done();
-    });
+    Product.deleteMany({})
+      .then(() => {
+        done();
+      })
+      .catch((err) => {
+        throw err;
+      });
   });
-  it("should list ALL products on /products GET", function (done) {
+  it("should list ALL products on /products GET", (done) => {
     new Product(product1).save((err, product) => {
       chai
         .request(server)
         .get("/products")
-        .end(function (err, res) {
+        .then((res) => {
           res.should.have.status(200);
           res.body.should.be.a("array");
           res.body[0].should.be.a("object");
@@ -73,15 +77,18 @@ describe("products", function () {
           );
           res.body[0].should.have.property("stock", product.stock);
           done();
+        })
+        .catch((err) => {
+          throw err;
         });
     });
   });
-  it("should list a SINGLE product on /product/<id> GET", function (done) {
+  it("should list a SINGLE product on /product/<id> GET", (done) => {
     new Product(product1).save((err, product) => {
       chai
         .request(server)
         .get("/products/" + product.id)
-        .end((err, res) => {
+        .then((res) => {
           res.should.have.status(200);
           res.body.should.have.property("_id").equals(product._id.toString());
           res.body.should.have.property("name", product.name);
@@ -100,17 +107,20 @@ describe("products", function () {
           res.body.should.have.property("discountable", product.discountable);
           res.body.should.have.property("stock", product.stock);
           done();
+        })
+        .catch((err) => {
+          throw err;
         });
     });
   });
-  it("should add a SINGLE product on /products POST when a single product is provided", function (done) {
+  it("should add a SINGLE product on /products POST when a single product is provided", (done) => {
     const requestBody = product1;
 
     chai
       .request(server)
       .post("/products")
       .send(requestBody)
-      .end(function (err, res) {
+      .then((res) => {
         res.should.have.status(201);
         res.body.should.have.property("_id");
         res.body.should.have.property("name", requestBody.name);
@@ -129,15 +139,18 @@ describe("products", function () {
         res.body.should.have.property("discountable", requestBody.discountable);
         res.body.should.have.property("stock", requestBody.stock);
         done();
+      })
+      .catch((err) => {
+        throw err;
       });
   });
-  it("should add MULTIPLE products on /products POST when an array is provided", function (done) {
+  it("should add MULTIPLE products on /products POST when an array is provided", (done) => {
     const requestBody = [product1, product2];
     chai
       .request(server)
       .post("/products")
       .send(requestBody)
-      .end((err, res) => {
+      .then((res) => {
         res.should.have.status(200);
         res.body.should.be.a("array");
         res.body.forEach((product) => {
@@ -157,9 +170,12 @@ describe("products", function () {
           product.should.have.property("stock").that.is.a("number");
         });
         done();
+      })
+      .catch((err) => {
+        throw err;
       });
   });
-  it("should update a SINGLE product on /product/<id> PUT", function (done) {
+  it("should update a SINGLE product on /product/<id> PUT", (done) => {
     const requestBody = {
       name: "New Name",
       wholesale_price_cents: 5004,
@@ -171,7 +187,7 @@ describe("products", function () {
         .request(server)
         .put("/products/" + product._id)
         .send(requestBody)
-        .end((err, res) => {
+        .then((res) => {
           res.should.have.status(200);
           res.body.should.be.a("object");
           res.body.should.have.property(
@@ -179,15 +195,18 @@ describe("products", function () {
             `Product ${product._id} successfully updated.`
           );
           done();
+        })
+        .catch((err) => {
+          throw err;
         });
     });
   });
-  it("should delete a SINGLE product on /product/<id> DELETE", function (done) {
+  it("should delete a SINGLE product on /product/<id> DELETE", (done) => {
     new Product(product1).save((err, product) => {
       chai
         .request(server)
         .delete("/products/" + product._id)
-        .end((err, res) => {
+        .then((res) => {
           res.should.have.status(200);
           res.body.should.be.a("object");
           res.body.should.have.property(
@@ -195,6 +214,9 @@ describe("products", function () {
             `Product ${product._id} deleted successfully.`
           );
           done();
+        })
+        .catch((err) => {
+          throw err;
         });
     });
   });

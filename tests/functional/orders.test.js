@@ -6,7 +6,6 @@ const mongoose = require("mongoose");
 const server = require("../../server");
 const should = chai.should();
 const Order = mongoose.model("Order");
-const mockData = require("./mockData");
 
 chai.use(chaiHttp);
 
@@ -43,84 +42,104 @@ const order2 = {
 
 describe("orders", function () {
   beforeEach((done) => {
-    Order.deleteMany({}, (err) => {
-      done();
-    });
+    Order.deleteMany()
+      .then((res) => {
+        done();
+      })
+      .catch((err) => {
+        throw err;
+      });
   });
-  it("should list ALL orders on /orders GET", function (done) {
-    new Order(order1).save((err, order) => {
-      chai
-        .request(server)
-        .get("/orders")
-        .end(function (err, res) {
-          res.should.have.status(200);
-          res.body.should.be.a("array");
-          res.body[0].should.be.a("object");
-          res.body[0].should.have.property("_id", order._id.toString());
-          res.body[0].should.have.property("user_id", order.user_id);
-          res.body[0].should.have.property("coupon_code", order.coupon_code);
-          res.body[0].should.have.property("in_store", order.in_store);
-          res.body[0].should.have.property("date", order.date.toISOString());
-          res.body[0].should.have.property("ship_date");
-          if (order.ship_date === null)
-            (res.body[0].ship_date === null).should.be.true;
-          else
-            res.body[0].ship_date.should.strictEqual(
-              order.ship_date.toISOString()
+  it("should list ALL orders on /orders GET", (done) => {
+    new Order(order1)
+      .save()
+      .then((order) => {
+        chai
+          .request(server)
+          .get("/orders")
+          .then((res) => {
+            res.should.have.status(200);
+            res.body.should.be.a("array");
+            res.body[0].should.be.a("object");
+            res.body[0].should.have.property("_id", order._id.toString());
+            res.body[0].should.have.property("user_id", order.user_id);
+            res.body[0].should.have.property("coupon_code", order.coupon_code);
+            res.body[0].should.have.property("in_store", order.in_store);
+            res.body[0].should.have.property("date", order.date.toISOString());
+            res.body[0].should.have.property("ship_date");
+            if (order.ship_date === null)
+              (res.body[0].ship_date === null).should.be.true;
+            else
+              res.body[0].ship_date.should.strictEqual(
+                order.ship_date.toISOString()
+              );
+            res.body[0].should.have.property("status", order.status);
+            res.body[0].should.have.property("items").that.is.a("array");
+            res.body[0].items[0].should.have.property(
+              "product_id",
+              order.items[0].product_id
             );
-          res.body[0].should.have.property("status", order.status);
-          res.body[0].should.have.property("items").that.is.a("array");
-          res.body[0].items[0].should.have.property(
-            "product_id",
-            order.items[0].product_id
-          );
-          res.body[0].items[0].should.have.property(
-            "quantity",
-            order.items[0].quantity
-          );
-          done();
-        });
-    });
-  });
-  it("should list a SINGLE order on /order/<id> GET", function (done) {
-    new Order(order1).save((err, order) => {
-      chai
-        .request(server)
-        .get("/orders/" + order.id)
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.have.property("_id", order._id.toString());
-          res.body.should.have.property("user_id", order.user_id);
-          res.body.should.have.property("coupon_code", order.coupon_code);
-          res.body.should.have.property("in_store", order.in_store);
-          res.body.should.have.property("date", order.date.toISOString());
-          if (order.ship_date)
-            res.body.should.have.property(
-              "ship_date",
-              order.ship_date.toISOString()
+            res.body[0].items[0].should.have.property(
+              "quantity",
+              order.items[0].quantity
             );
-          res.body.should.have.property("status", order.status);
-          res.body.should.have.property("items").that.is.a("array");
-          res.body.items[0].should.have.property(
-            "product_id",
-            order.items[0].product_id
-          );
-          res.body.items[0].should.have.property(
-            "quantity",
-            order.items[0].quantity
-          );
-          done();
-        });
-    });
+            done();
+          })
+          .catch((err) => {
+            throw err;
+          });
+      })
+      .catch((err) => {
+        throw err;
+      });
   });
-  it("should add a SINGLE order on /orders POST when a single order is provided", function (done) {
+  it("should list a SINGLE order on /order/<id> GET", (done) => {
+    new Order(order1)
+      .save()
+      .then((order) => {
+        chai
+          .request(server)
+          .get("/orders/" + order.id)
+          .then((res) => {
+            res.should.have.status(200);
+            res.body.should.have.property("_id", order._id.toString());
+            res.body.should.have.property("user_id", order.user_id);
+            res.body.should.have.property("coupon_code", order.coupon_code);
+            res.body.should.have.property("in_store", order.in_store);
+            res.body.should.have.property("date", order.date.toISOString());
+            if (order.ship_date)
+              res.body.should.have.property(
+                "ship_date",
+                order.ship_date.toISOString()
+              );
+            res.body.should.have.property("status", order.status);
+            res.body.should.have.property("items").that.is.a("array");
+            res.body.items[0].should.have.property(
+              "product_id",
+              order.items[0].product_id
+            );
+            res.body.items[0].should.have.property(
+              "quantity",
+              order.items[0].quantity
+            );
+            done();
+          })
+          .catch((err) => {
+            throw err;
+          });
+      })
+      .catch((err) => {
+        throw err;
+      });
+  });
+  it("should add a SINGLE order on /orders POST when a single order is provided", (done) => {
     const requestBody = order1;
 
     chai
       .request(server)
       .post("/orders")
       .send(requestBody)
-      .end(function (err, res) {
+      .then((res) => {
         res.should.have.status(201);
         res.body.should.have.property("_id");
         res.body.should.have.property("user_id", requestBody.user_id);
@@ -139,15 +158,18 @@ describe("orders", function () {
           requestBody.items[0].quantity
         );
         done();
+      })
+      .catch((err) => {
+        throw err;
       });
   });
-  it("should add MULTIPLE orders on /orders POST when an array is provided", function (done) {
+  it("should add MULTIPLE orders on /orders POST when an array is provided", (done) => {
     const requestBody = [order1, order2];
     chai
       .request(server)
       .post("/orders")
       .send(requestBody)
-      .end((err, res) => {
+      .then((res) => {
         res.should.have.status(200);
         res.body.should.be.a("array");
         res.body.forEach((order) => {
@@ -169,52 +191,71 @@ describe("orders", function () {
           );
         });
         done();
+      })
+      .catch((err) => {
+        throw err;
       });
   });
-  it("should update a SINGLE order on /order/<id> PUT", function (done) {
+  it("should update a SINGLE order on /order/<id> PUT", (done) => {
     const requestBody = {
       ship_date: new Date(),
       status: "shipped",
     };
 
-    new Order(order1).save((err, order) => {
-      chai
-        .request(server)
-        .put("/orders/" + order._id)
-        .send(requestBody)
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a("object");
-          res.body.should.have.property(
-            "success",
-            `Order ${order._id} successfully updated.`
-          );
-          done();
-        });
-    });
+    new Order(order1)
+      .save()
+      .then((order) => {
+        chai
+          .request(server)
+          .put("/orders/" + order._id)
+          .send(requestBody)
+          .then((res) => {
+            res.should.have.status(200);
+            res.body.should.be.a("object");
+            res.body.should.have.property(
+              "success",
+              `Order ${order._id} successfully updated.`
+            );
+            done();
+          })
+          .catch((err) => {
+            throw err;
+          });
+      })
+      .catch((err) => {
+        throw err;
+      });
   });
-  it("should delete a SINGLE order on /order/<id> DELETE", function (done) {
-    new Order(order1).save((err, order) => {
-      chai
-        .request(server)
-        .delete("/orders/" + order._id)
-        .end((err, res) => {
-          res.should.have.status(200);
-          res.body.should.be.a("object");
-          res.body.should.have.property(
-            "success",
-            `Order ${order._id} deleted successfully.`
-          );
-          done();
-        });
-    });
+  it("should delete a SINGLE order on /order/<id> DELETE", (done) => {
+    new Order(order1)
+      .save()
+      .then((order) => {
+        chai
+          .request(server)
+          .delete("/orders/" + order._id)
+          .then((res) => {
+            res.should.have.status(200);
+            res.body.should.be.a("object");
+            res.body.should.have.property(
+              "success",
+              `Order ${order._id} deleted successfully.`
+            );
+            done();
+          })
+          .catch((err) => {
+            throw err;
+          });
+      })
+      .catch((err) => {
+        throw err;
+      });
   });
-  it("should return error on /order/<id> DELETE with invalid ID", function (done) {
+  it("should return error on /order/<id> DELETE with invalid ID", (done) => {
     const fakeId = "1234567890abc15aa4b58a18";
     chai
       .request(server)
       .delete("/orders/" + fakeId)
-      .end((err, res) => {
+      .then((res) => {
         res.should.have.status(404);
         res.body.should.be.a("object");
         res.body.should.have.property(
@@ -222,6 +263,9 @@ describe("orders", function () {
           `Order with id ${fakeId} not found.`
         );
         done();
+      })
+      .catch((err) => {
+        throw err;
       });
   });
 });
