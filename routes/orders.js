@@ -130,6 +130,10 @@ router
         .status(StatusCodes.OK)
         .send({ success: `Order ${id} deleted successfully.` });
     } catch (error) {
+      if (error.name === "DocumentNotFoundError")
+        return res
+          .status(StatusCodes.NOT_FOUND)
+          .send({ error: `Order with id ${id} not found.` });
       if (error.name === "CastError")
         return res
           .status(StatusCodes.BAD_REQUEST)

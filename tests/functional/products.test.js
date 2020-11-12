@@ -4,7 +4,7 @@ const chai = require("chai");
 const chaiHttp = require("chai-http");
 const mongoose = require("mongoose");
 const server = require("../../server");
-const should = chai.should();
+const { expect } = chai;
 const Product = mongoose.model("Product");
 const mockData = require("./mockData");
 
@@ -39,124 +39,101 @@ const product2 = {
 };
 
 describe("products", () => {
-  beforeEach(async () => {
-    try {
-      await Product.deleteMany({});
-    } catch (err) {
-      throw err;
-    }
+  before(async function () {
+    this.timeout(5000);
+    await Product.deleteMany({});
   });
 
   it("should list ALL products on /products GET", async () => {
-    try {
-      const product = await new Product(product1).save();
-      const res = await chai.request(server).get("/products");
-      res.should.have.status(200);
-      res.body.should.be.a("array");
-      res.body[0].should.be.a("object");
-      res.body[0].should.have.property("_id", product._id.toString());
-      res.body[0].should.have.property("name", product.name);
-      res.body[0].should.have.property("description", product.description);
-      res.body[0].should.have.property("category", product.category);
-      res.body[0].should.have.property("department", product.department);
-      res.body[0].should.have.property("photo_url", product.photo_url);
-      res.body[0].should.have.property(
-        "wholesale_price_cents",
-        product.wholesale_price_cents
-      );
-      res.body[0].should.have.property(
-        "retail_price_cents",
-        product.retail_price_cents
-      );
-      res.body[0].should.have.property("discountable", product.discountable);
-      res.body[0].should.have.property("stock", product.stock);
-    } catch (err) {
-      throw err;
-    }
+    const product = await new Product(product1).save();
+    const res = await chai.request(server).get("/products");
+    expect(res).to.have.status(200);
+    expect(res.body).to.be.a("array");
+    expect(res.body[0]).to.be.a("object");
+    expect(res.body[0]).to.have.property("_id", product._id.toString());
+    expect(res.body[0]).to.have.property("name", product.name);
+    expect(res.body[0]).to.have.property("description", product.description);
+    expect(res.body[0]).to.have.property("category", product.category);
+    expect(res.body[0]).to.have.property("department", product.department);
+    expect(res.body[0]).to.have.property("photo_url", product.photo_url);
+    expect(res.body[0]).to.have.property(
+      "wholesale_price_cents",
+      product.wholesale_price_cents
+    );
+    expect(res.body[0]).to.have.property(
+      "retail_price_cents",
+      product.retail_price_cents
+    );
+    expect(res.body[0]).to.have.property("discountable", product.discountable);
+    expect(res.body[0]).to.have.property("stock", product.stock);
   });
 
   it("should list a SINGLE product on /product/<id> GET", async () => {
-    try {
-      const product = await new Product(product1).save();
-      const res = await chai.request(server).get("/products/" + product.id);
-      res.should.have.status(200);
-      res.body.should.have.property("_id").equals(product._id.toString());
-      res.body.should.have.property("name", product.name);
-      res.body.should.have.property("description", product.description);
-      res.body.should.have.property("category", product.category);
-      res.body.should.have.property("department", product.department);
-      res.body.should.have.property("photo_url", product.photo_url);
-      res.body.should.have.property(
-        "wholesale_price_cents",
-        product.wholesale_price_cents
-      );
-      res.body.should.have.property(
-        "retail_price_cents",
-        product.retail_price_cents
-      );
-      res.body.should.have.property("discountable", product.discountable);
-      res.body.should.have.property("stock", product.stock);
-    } catch (err) {
-      throw err;
-    }
+    const product = await new Product(product1).save();
+    const res = await chai.request(server).get("/products/" + product.id);
+    expect(res).to.have.status(200);
+    expect(res.body).to.have.property("_id").equals(product._id.toString());
+    expect(res.body).to.have.property("name", product.name);
+    expect(res.body).to.have.property("description", product.description);
+    expect(res.body).to.have.property("category", product.category);
+    expect(res.body).to.have.property("department", product.department);
+    expect(res.body).to.have.property("photo_url", product.photo_url);
+    expect(res.body).to.have.property(
+      "wholesale_price_cents",
+      product.wholesale_price_cents
+    );
+    expect(res.body).to.have.property(
+      "retail_price_cents",
+      product.retail_price_cents
+    );
+    expect(res.body).to.have.property("discountable", product.discountable);
+    expect(res.body).to.have.property("stock", product.stock);
   });
 
   it("should add a SINGLE product on /products POST when a single product is provided", async () => {
     const requestBody = product1;
 
-    try {
-      const res = await chai
-        .request(server)
-        .post("/products")
-        .send(requestBody);
-      res.should.have.status(201);
-      res.body.should.have.property("_id");
-      res.body.should.have.property("name", requestBody.name);
-      res.body.should.have.property("description", requestBody.description);
-      res.body.should.have.property("category", requestBody.category);
-      res.body.should.have.property("department", requestBody.department);
-      res.body.should.have.property("photo_url", requestBody.photo_url);
-      res.body.should.have.property(
-        "wholesale_price_cents",
-        requestBody.wholesale_price_cents
-      );
-      res.body.should.have.property(
-        "retail_price_cents",
-        requestBody.retail_price_cents
-      );
-      res.body.should.have.property("discountable", requestBody.discountable);
-      res.body.should.have.property("stock", requestBody.stock);
-    } catch (err) {
-      throw err;
-    }
+    const res = await chai.request(server).post("/products").send(requestBody);
+    expect(res).to.have.status(201);
+    expect(res.body).to.have.property("_id");
+    expect(res.body).to.have.property("name", requestBody.name);
+    expect(res.body).to.have.property("description", requestBody.description);
+    expect(res.body).to.have.property("category", requestBody.category);
+    expect(res.body).to.have.property("department", requestBody.department);
+    expect(res.body).to.have.property("photo_url", requestBody.photo_url);
+    expect(res.body).to.have.property(
+      "wholesale_price_cents",
+      requestBody.wholesale_price_cents
+    );
+    expect(res.body).to.have.property(
+      "retail_price_cents",
+      requestBody.retail_price_cents
+    );
+    expect(res.body).to.have.property("discountable", requestBody.discountable);
+    expect(res.body).to.have.property("stock", requestBody.stock);
   });
 
   it("should add MULTIPLE products on /products POST when an array is provided", async () => {
     const requestBody = [product1, product2];
-    try {
-      const res = await chai
-        .request(server)
-        .post("/products")
-        .send(requestBody);
-      res.should.have.status(200);
-      res.body.should.be.a("array");
-      res.body.forEach((product) => {
-        product.should.have.property("_id");
-        product.should.have.property("name").that.is.a("string");
-        product.should.have.property("description").that.is.a("string");
-        product.should.have.property("category").that.is.a("string");
-        product.should.have.property("department").that.is.a("string");
-        product.should.have.property("photo_url").that.is.a("string");
-        product.should.have
-          .property("wholesale_price_cents")
-          .that.is.a("number");
-        product.should.have.property("retail_price_cents").that.is.a("number");
-        product.should.have.property("discountable").that.is.a("boolean");
-        product.should.have.property("stock").that.is.a("number");
-      });
-    } catch (err) {
-      throw err;
-    }
+    const res = await chai.request(server).post("/products").send(requestBody);
+    expect(res).to.have.status(200);
+    expect(res.body).to.be.a("array");
+    res.body.forEach((product) => {
+      expect(product).to.have.property("_id");
+      expect(product).to.have.property("name").that.is.a("string");
+      expect(product).to.have.property("description").that.is.a("string");
+      expect(product).to.have.property("category").that.is.a("string");
+      expect(product).to.have.property("department").that.is.a("string");
+      expect(product).to.have.property("photo_url").that.is.a("string");
+      expect(product)
+        .to.have.property("wholesale_price_cents")
+        .that.is.a("number");
+      expect(product)
+        .to.have.property("retail_price_cents")
+        .that.is.a("number");
+      expect(product).to.have.property("discountable").that.is.a("boolean");
+      expect(product).to.have.property("stock").that.is.a("number");
+    });
   });
 
   it("should update a SINGLE product on /product/<id> PUT", async () => {
@@ -165,35 +142,27 @@ describe("products", () => {
       wholesale_price_cents: 5004,
       discountable: false,
     };
-    try {
-      const product = await new Product(product1).save();
-      const res = await chai
-        .request(server)
-        .put("/products/" + product._id)
-        .send(requestBody);
-      res.should.have.status(200);
-      res.body.should.be.a("object");
-      res.body.should.have.property(
-        "success",
-        `Product ${product._id} successfully updated.`
-      );
-    } catch (err) {
-      throw err;
-    }
+    const product = await new Product(product1).save();
+    const res = await chai
+      .request(server)
+      .put("/products/" + product._id)
+      .send(requestBody);
+    expect(res).to.have.status(200);
+    expect(res.body).to.be.a("object");
+    expect(res.body).to.have.property(
+      "success",
+      `Product ${product._id} successfully updated.`
+    );
   });
 
   it("should delete a SINGLE product on /product/<id> DELETE", async () => {
-    try {
-      const product = await new Product(product1).save();
-      const res = await chai.request(server).delete("/products/" + product._id);
-      res.should.have.status(200);
-      res.body.should.be.a("object");
-      res.body.should.have.property(
-        "success",
-        `Product ${product._id} deleted successfully.`
-      );
-    } catch (err) {
-      throw err;
-    }
+    const product = await new Product(product1).save();
+    const res = await chai.request(server).delete("/products/" + product._id);
+    expect(res).to.have.status(200);
+    expect(res.body).to.be.a("object");
+    expect(res.body).to.have.property(
+      "success",
+      `Product ${product._id} deleted successfully.`
+    );
   });
 });
