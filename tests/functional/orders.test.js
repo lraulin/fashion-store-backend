@@ -42,7 +42,6 @@ const order2 = {
 
 describe("orders", function () {
   before(async function () {
-    console.log("BEFORE EACH");
     this.timeout(5000);
     try {
       await Order.deleteMany({}).exec();
@@ -52,7 +51,6 @@ describe("orders", function () {
   });
 
   it("should list ALL orders on /orders GET", async function () {
-    console.log(this.title);
     const order = await new Order(order1).save();
     const res = await chai.request(server).get("/orders");
     expect(res).to.have.status(200);
@@ -82,7 +80,6 @@ describe("orders", function () {
   });
 
   it("should list a SINGLE order on /order/<id> GET", async function () {
-    console.log(this.title);
     const order = await new Order(order1).save();
     const res = await chai.request(server).get("/orders/" + order.id);
     expect(res).to.have.status(200);
@@ -109,7 +106,6 @@ describe("orders", function () {
   });
 
   it("should add a SINGLE order on /orders POST when a single order is provided", async function () {
-    console.log(this.title);
     const requestBody = order1;
 
     const res = await chai.request(server).post("/orders").send(requestBody);
@@ -133,7 +129,6 @@ describe("orders", function () {
   });
 
   it("should add MULTIPLE orders on /orders POST when an array is provided", async function () {
-    console.log(this.title);
     const requestBody = [order1, order2];
     const res = await chai.request(server).post("/orders").send(requestBody);
     expect(res).to.have.status(200);
@@ -159,14 +154,12 @@ describe("orders", function () {
   });
 
   it("should update a SINGLE order on /order/<id> PUT", async function () {
-    console.log(this.title);
     const requestBody = {
       ship_date: new Date(),
       status: "shipped",
     };
 
     const order = await new Order(order1).save();
-    console.log("should update", order._id);
     const res = await chai
       .request(server)
       .put("/orders/" + order._id)
@@ -180,9 +173,7 @@ describe("orders", function () {
   });
 
   it("should delete a SINGLE order on /order/<id> DELETE", async function () {
-    console.log(this.title);
     const order = await new Order(order1).save();
-    console.log("should delete", order._id);
     const res = await chai.request(server).delete("/orders/" + order._id);
     expect(res).to.have.status(200);
     expect(res.body).to.be.a("object");
@@ -195,7 +186,6 @@ describe("orders", function () {
   it("should return error on /order/<id> DELETE with invalid ID", async function () {
     const fakeId = "1234567890abc15aa4b58a18"; // Valid ObjectID string but not in database
     const res = await chai.request(server).delete("/orders/" + fakeId);
-    console.log("should fail delete", fakeId);
     expect(res).to.have.status(404);
     expect(res.body).to.be.a("object");
     expect(res.body).to.have.property(
